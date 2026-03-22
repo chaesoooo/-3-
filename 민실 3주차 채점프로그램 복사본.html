@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>민실 3주차 스터디 채점 프로그램</title>
+
+<style>
+
+body{
+font-family: Arial;
+margin:40px;
+}
+
+textarea{
+width:700px;
+height:120px;
+font-size:18px;
+padding:10px;
+}
+
+.problem{
+margin-bottom:40px;
+}
+
+.result{
+margin-top:10px;
+font-size:18px;
+line-height:1.6;
+}
+
+.wrong{
+color:red;
+font-weight:bold;
+}
+
+button{
+font-size:20px;
+padding:10px 30px;
+margin-top:40px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>민실 3주차 스터디 채점 프로그램</h2>
+
+<div id="exam"></div>
+
+<img src="https://i.namu.wiki/i/qxU6aXEmsX8QxrnyT4mzmNAPto9M0Y7DTteM6wuw0HUv-ZJ02oo62ajoc-nFO3qPUtsV94wqc6yzJM4UYQg6Eg.webp"
+onclick="gradeAll()"
+style="cursor:pointer; width:200px;">
+
+<script>
+
+const answers = {
+
+1:"원고에게, 김포시 장기동 71 대 123㎡에 관하여 가. 피고 김수환은 인천지방법원 2020. 4. 2. 접수 제11357호로 마친 소유권이전등기의, 나. 피고 이동주는 같은 법원 2021. 1. 2. 접수 제14677호로 마친 소유권이전등기의, 다. 피고 이민형은 같은 법원 2022. 2. 6. 제18864호로 마친 소유권이전등기의 각 말소등기절차를 이행하라.",
+2:"피고는 원고에게 김포시 장기동 71 대 123㎡에 관하여 진정명의회복을 원인으로 한 소유권이전등기절차를 이행하라.",
+3:"원고에게, 피고 박영희는 3/5 지분에 관하여, 피고 이정숙은 2/5 지분에 관하여, 가. 별지 목록 제1항 기재 부동산에 관한 각 2020. 2. 1. 매매를 원인으로 한 소유권이전등기절차를 이행하고, 나. 각 같은 목록 제2항 기재 건물을 철거하고, 다. 각 위 가.항 부동산을 인도하라.",
+4:"서울 마포구 공덕로 3 대 125㎡에 관하여, 가. 피고 갑에게, 1) 피고 병은 서울서부지방법원 2022. 10. 5. 접수 제7875호로 마친 소유권이전등기의, 2) 피고 을은 같은 법원 2022. 6. 7. 접수 제4875호로 마친 소유권이전등기의 각 말소등기절차를 이행하고, 나. 피고 갑은 원고로부터 1억 원을 지급받음과 동시에 원고에게 2022. 2. 1. 매매를 원인으로 한 소유권이전등기절차를 이행하라.",
+5:"원고에게, 피고 김인재는 서울 서초구 서초4동 16 대 200㎡에 관하여 서울중앙지방법원 등기국 2019. 10. 7. 접수 제36785호로 마친 소유권이전등기의 말소등기절차를 이행하고, 피고 안영진은 위 소유권이전등기의 말소등기에 대하여 승낙의 의사를 표시하라."
+
+}
+
+function buildPage(){
+
+let html=""
+
+for(let i in answers){
+
+html+=`
+<div class="problem">
+<h3>${i}번</h3>
+
+<textarea id="answer${i}" placeholder="답 입력"></textarea>
+
+<div id="result${i}" class="result"></div>
+</div>
+`
+
+}
+
+document.getElementById("exam").innerHTML=html
+
+}
+
+function buildLCS(a,b){
+
+let m=a.length
+let n=b.length
+
+let dp=Array.from({length:m+1},()=>Array(n+1).fill(0))
+
+for(let i=1;i<=m;i++){
+for(let j=1;j<=n;j++){
+
+if(a[i-1]===b[j-1]){
+dp[i][j]=dp[i-1][j-1]+1
+}else{
+dp[i][j]=Math.max(dp[i-1][j],dp[i][j-1])
+}
+
+}
+}
+
+return dp
+
+}
+
+function highlight(user,correct){
+
+let dp=buildLCS(correct,user)
+
+let i=correct.length
+let j=user.length
+let result=""
+
+while(i>0 && j>0){
+
+if(correct[i-1]===user[j-1]){
+result=user[j-1]+result
+i--
+j--
+}
+else if(dp[i][j-1] >= dp[i-1][j]){
+result='<span class="wrong">'+user[j-1]+'</span>'+result
+j--
+}
+else{
+i--
+}
+
+}
+
+while(j>0){
+result='<span class="wrong">'+user[j-1]+'</span>'+result
+j--
+}
+
+return result
+
+}
+
+function lcsLength(a,b){
+
+let dp=buildLCS(a,b)
+return dp[a.length][b.length]
+
+}
+
+function gradeAll(){
+
+for(let i in answers){
+
+let user=document.getElementById("answer"+i).value.trim()
+let correct=answers[i]
+
+let lcs=lcsLength(correct,user)
+
+let wrongCount=(correct.length+user.length)-2*lcs
+
+let colored=highlight(user,correct)
+
+document.getElementById("result"+i).innerHTML=
+"<b>틀린 개수: "+wrongCount+"개</b><br><br>"+
+colored+
+"<br><br><b>정답</b><br>"+correct
+
+}
+
+}
+
+buildPage()
+
+</script>
+
+</body>
+</html>
